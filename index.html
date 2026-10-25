@@ -25,9 +25,9 @@ input{flex:1 1 100%}select{flex:1 1 140px}
 .chip{cursor:pointer}.chip[aria-pressed=true]{background:var(--lamp);border-color:var(--lamp);color:#fff;font-weight:500}
 :focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
 .grid{display:grid;grid-template-columns:1fr;gap:16px}
-.card{all:unset;box-sizing:border-box;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:block;box-shadow:0 1px 3px rgba(11,31,58,.08);transition:transform .25s,border-color .25s,box-shadow .25s}
+.card{all:unset;box-sizing:border-box;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:block;box-shadow:0 1px 3px rgba(11,31,58,.08);transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
 .card:focus-visible{outline:2px solid var(--lamp)}
-@media (hover:hover){.card:hover{transform:translateY(-4px);border-color:var(--lamp);box-shadow:0 10px 24px rgba(26,92,255,.18)}.card:hover .shot{transform:scale(1.12)}.card:hover .thumb::after{animation:scan .9s ease-out}}
+@media (hover:hover){.card:hover{transform:translateY(-4px);border-color:var(--lamp);box-shadow:0 10px 24px rgba(26,92,255,.18)}.card:hover .shot{transform:scale(1.12)}.card:hover .thumb::after{animation:scan 1.5s ease-in-out infinite}}
 .enter .card{animation:in .5s calc(var(--i)*30ms) both cubic-bezier(.2,.8,.2,1)}
 @keyframes in{from{opacity:0;transform:translateY(24px) scale(.97)}}
 .thumb{position:relative;aspect-ratio:16/9;background:radial-gradient(circle at 30% 20%,#dbe8ff,#a9c6ff);overflow:hidden}
@@ -37,7 +37,7 @@ input{flex:1 1 100%}select{flex:1 1 140px}
 .noshot{position:absolute;inset:0;display:grid;place-items:center}
 .noshot img{max-width:45%;max-height:45%;object-fit:contain}
 .dead .thumb{filter:grayscale(1);opacity:.55}
-.stat{position:absolute;left:10px;top:10px;display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.94);box-shadow:0 1px 3px rgba(11,31,58,.18);padding:3px 10px 3px 8px;border-radius:99px;font-size:13px}
+.stat{position:absolute;left:10px;top:10px;display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.94);box-shadow:0 1px 3px rgba(11,31,58,.18);padding:3px 10px 3px 8px;border-radius:9px;font-size:12px;font-weight:600}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--dim)}
 .live .dot{background:var(--live);animation:ping 1.8s infinite}
 .dead .dot{background:var(--dead)}
@@ -99,7 +99,9 @@ video{width:100%;aspect-ratio:16/9;background:#000;display:block}
 <script>
 const PLAYLIST='https://iptv-org.github.io/iptv/categories/sports.m3u';
 const $=s=>document.querySelector(s);
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const esc=s=>String(s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const isHttpUrl=u=>{try{const p=new URL(u).protocol;return p==='http:'||p==='https:';}catch{return false;}};
+const isLikelyHls=u=>{if(!isHttpUrl(u))return false;const p=new URL(u).pathname.toLowerCase();return /(?:^|\/)[^/?#]+\.(?:m3u8?|m3u)(?:[?#]|$)/i.test(p)||/(?:^|\/)(?:playlist|live|stream|index)(?:[/?#]|$)/i.test(p);};
 let DATA=[],hls=null,first=true,checked=true;
 
 async function load(){
@@ -109,7 +111,7 @@ async function load(){
     for(const l of t.split(/\r?\n/)){
       if(l.startsWith('#EXTINF')){const a=k=>(l.match(new RegExp(k+'="([^"]*)"'))||[])[1]||'';
         m={name:l.slice(l.lastIndexOf(',')+1).trim(),logo:a('tvg-logo'),country:((a('tvg-id').match(/\.([a-z]{2})/i)||[])[1]||'').toUpperCase()};}
-      else if(l.trim()&&!l.startsWith('#')&&m){out.push({...m,id:'u'+out.length,url:l.trim(),live:null,https:l.startsWith('https:'),cors:true});m=null;}
+      else if(l.trim()&&!l.startsWith('#')&&m){const url=l.trim();if(!isLikelyHls(url))continue;out.push({...m,id:'u'+out.length,url,live:null,https:url.startsWith('https:'),cors:true});m=null;}
     }
     return{updatedAt:null,channels:out};
   }
@@ -146,9 +148,10 @@ function play(c){
   const n=nowOf(c),w=$('#pwhat');w.hidden=!n;
   if(n)w.textContent=`On now: ${n.cur[2]}${n.next?`. Next: ${n.next[2]}`:''}`;
   $('#dlg').showModal();
-  const fail=msg=>{note.textContent=msg;note.hidden=false;};
-  if(!c.https&&location.protocol==='https:')fail('This stream uses http, which browsers block on https pages. Copy the link and open it in VLC.');
-  else if(!c.cors)fail('This provider may block playback from other websites. If it stays black, copy the link into VLC.');
+  const fail=msg=>{note.textContent=msg;note.hidden=false;return true;};
+  if(!isLikelyHls(c.url)){fail('This source is not a browser-compatible HLS stream. Copy the link and open it in VLC or another player.');return;}
+  if(!c.https&&location.protocol==='https:'){fail('This stream uses http, which browsers block on https pages. Copy the link and open it in VLC.');return;}
+  if(!c.cors){fail('This provider may block playback from other websites. If it stays black, copy the link into VLC.');}
   if(window.Hls&&Hls.isSupported()){
     hls=new Hls();hls.on(Hls.Events.MANIFEST_PARSED,setupQuality);hls.on(Hls.Events.LEVEL_SWITCHED,labelAuto);hls.loadSource(c.url);hls.attachMedia(v);
     hls.on(Hls.Events.ERROR,(e,d)=>{if(d.fatal)fail('This stream is not responding right now. Try another channel.');});
@@ -182,7 +185,7 @@ $('#q').oninput=render;$('#country').onchange=render;
 $('#liveOnly').onclick=e=>{const b=e.currentTarget;b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')!=='true');render();};
 
 load().then(j=>{
-  DATA=j.channels;
+  DATA=j.channels.filter(c=>isLikelyHls(c.url));
   const cs=[...new Set(DATA.map(c=>c.country).filter(Boolean))].sort();
   $('#country').innerHTML+=cs.map(c=>`<option>${c}</option>`).join('');
   const n=DATA.filter(c=>c.live).length;

@@ -11,6 +11,15 @@ const CONC = 12;                       // parallel checks
 const MAX_FAILS = 3;                   // consecutive failed runs before a channel is dropped
 const UA = 'Mozilla/5.0 (compatible; Floodlight/1.0)';
 
+const isLikelyHls = (url) => {
+  try {
+    const p = new URL(url).protocol;
+    if (p !== 'http:' && p !== 'https:') return false;
+    const path = new URL(url).pathname.toLowerCase();
+    return /(?:^|\/)[^/?#]+\.(?:m3u8?|m3u)(?:[?#]|$)/i.test(path) || /(?:^|\/)(?:playlist|live|stream|index)(?:[/?#]|$)/i.test(path);
+  } catch { return false; }
+};
+
 const get = (url, ms = 8000) =>
   fetch(url, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(ms), redirect: 'follow' });
 
@@ -21,13 +30,18 @@ function parse(m3u) {
     if (l.startsWith('#EXTINF')) {
       const a = (k) => (l.match(new RegExp(k + '="([^"]*)"')) || [])[1] || '';
       meta = { name: l.slice(l.lastIndexOf(',') + 1).trim(), logo: a('tvg-logo'), tvgId: a('tvg-id') };
-    } else if (l && !l.startsWith('#') && meta) { out.push({ ...meta, url: l }); meta = null; }
+    } else if (l && !l.startsWith('#') && meta) {
+      const url = l;
+      if (isLikelyHls(url)) out.push({ ...meta, url });
+      meta = null;
+    }
   }
   return out;
 }
 
 // A stream is "live" only if the playlist loads AND it lists real segments.
 async function check(url) {
+  if (!isLikelyHls(url)) return { ok: false };
   const t = Date.now();
   try {
     let res = await get(url);
@@ -37,6 +51,7 @@ async function check(url) {
     if (!text.startsWith('#EXTM3U')) return { ok: false };
     if (text.includes('#EXT-X-STREAM-INF')) {           // master playlist: follow first variant
       const v = text.split('\n').find((l) => l.trim() && !l.startsWith('#'));
+      if (!v) return { ok: false };
       res = await get(new URL(v.trim(), res.url));
       if (!res.ok) return { ok: false };
       text = await res.text();
