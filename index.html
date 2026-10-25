@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Thunder Live Sports</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f7ff;--card:#fff;--line:#d3e0f5;--chalk:#0b1f3a;--dim:#566b8c;--lamp:#1a5cff;--live:#0f9d58;--dead:#d93030;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--chalk);font:400 16px/1.5 Barlow,system-ui,sans-serif}
+.wrap{max-width:1240px;margin:0 auto;padding:0 16px 64px}
+header{padding:32px 0 8px}
+h1{margin:0;font:800 clamp(56px,17vw,132px)/.9 "Barlow Condensed",sans-serif;letter-spacing:-.01em;
+  background:linear-gradient(100deg,transparent,var(--lamp),transparent) -60% 0/40% 100% no-repeat,linear-gradient(var(--chalk),var(--chalk));
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:sweep 2.2s .2s ease-out forwards}
+@keyframes sweep{to{background-position:160% 0,0 0}}
+.sub{margin:12px 0 0;color:var(--dim);max-width:52ch}
+.sub b{color:var(--live);font-weight:500}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin:16px -16px;padding:10px 16px;position:sticky;top:0;z-index:5;background:rgba(243,247,255,.92);backdrop-filter:blur(8px)}
+input,select,.chip{background:var(--card);border:1px solid var(--line);color:var(--chalk);border-radius:10px;padding:10px 14px;min-height:44px;font:inherit}
+input{flex:1 1 100%}select{flex:1 1 140px}
+.chip{cursor:pointer}.chip[aria-pressed=true]{background:var(--lamp);border-color:var(--lamp);color:#fff;font-weight:500}
+:focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
+.grid{display:grid;grid-template-columns:1fr;gap:16px}
+.card{all:unset;box-sizing:border-box;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:block;box-shadow:0 1px 3px rgba(11,31,58,.08);transition:transform .25s,border-color .25s,box-shadow .25s}
+.card:focus-visible{outline:2px solid var(--lamp)}
+@media (hover:hover){.card:hover{transform:translateY(-4px);border-color:var(--lamp);box-shadow:0 10px 24px rgba(26,92,255,.18)}.card:hover .shot{transform:scale(1.12)}.card:hover .thumb::after{animation:scan .9s ease-out}}
+.enter .card{animation:in .5s calc(var(--i)*30ms) both cubic-bezier(.2,.8,.2,1)}
+@keyframes in{from{opacity:0;transform:translateY(24px) scale(.97)}}
+.thumb{position:relative;aspect-ratio:16/9;background:radial-gradient(circle at 30% 20%,#dbe8ff,#a9c6ff);overflow:hidden}
+.thumb img.shot{width:100%;height:100%;object-fit:cover;display:block;transition:transform 6s ease-out}
+.thumb::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 40%,rgba(255,255,255,.3) 50%,transparent 60%) -150% 0/250% 100% no-repeat}
+@keyframes scan{to{background-position:150% 0}}
+.noshot{position:absolute;inset:0;display:grid;place-items:center}
+.noshot img{max-width:45%;max-height:45%;object-fit:contain}
+.dead .thumb{filter:grayscale(1);opacity:.55}
+.stat{position:absolute;left:10px;top:10px;display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.94);box-shadow:0 1px 3px rgba(11,31,58,.18);padding:3px 10px 3px 8px;border-radius:99px;font-size:13px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--dim)}
+.live .dot{background:var(--live);animation:ping 1.8s infinite}
+.dead .dot{background:var(--dead)}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(15,157,88,.6)}80%,100%{box-shadow:0 0 0 9px transparent}}
+.logo{position:absolute;right:10px;bottom:10px;width:38px;height:38px;border-radius:8px;background:#fff;border:1px solid var(--line);padding:4px;object-fit:contain}
+.info{padding:12px 14px 14px}
+.name{font:600 20px/1.15 "Barlow Condensed",sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta{color:var(--dim);font-size:13px;margin-top:3px}
+.prog{margin-top:9px;font-size:14px}.prog:empty{display:none}
+.prog .pt{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prog .tr{height:3px;background:var(--line);border-radius:2px;margin-top:6px;overflow:hidden}
+.prog .tr i{display:block;height:100%;width:var(--p);background:var(--lamp);animation:fill 1.1s .3s both cubic-bezier(.2,.8,.2,1)}
+@keyframes fill{from{width:0}}
+.empty{padding:60px 0;color:var(--dim);text-align:center}
+dialog{width:100%;max-width:100%;margin:auto 0 0;background:var(--card);color:var(--chalk);border:1px solid var(--line);border-radius:16px 16px 0 0;padding:0;overflow:hidden}
+dialog[open]{animation:pop .3s cubic-bezier(.2,.8,.2,1)}
+dialog::backdrop{background:rgba(11,31,58,.6);backdrop-filter:blur(4px)}
+@keyframes pop{from{opacity:0;transform:translateY(40px)}}
+video{width:100%;aspect-ratio:16/9;background:#000;display:block}
+.pbar{display:flex;gap:8px;align-items:center;padding:12px 16px;flex-wrap:wrap}
+.pbar h2{margin:0;font:800 26px "Barlow Condensed",sans-serif;flex:1 1 100%}
+.pbar button{background:var(--bg);color:var(--chalk);border:1px solid var(--line);border-radius:10px;padding:8px 14px;min-height:44px;font:inherit;cursor:pointer}
+.note{padding:0 16px 12px;color:#9a5b00;font-size:14px}
+#pnote{padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+@media (min-width:700px){
+  .wrap{padding:0 24px 80px}header{padding:56px 0 16px}
+  .bar{margin:24px 0;padding:12px 0;background:linear-gradient(var(--bg) 80%,transparent)}
+  input{flex:1 1 260px}select{flex:0 1 200px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+  dialog{width:min(960px,94vw);margin:auto;border-radius:14px}
+  .pbar{padding:14px 18px}.pbar h2{flex:1 1 auto}.note{padding:0 18px 12px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}h1{color:var(--chalk);background:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Thunder Live</h1>
+    <p class="sub" id="sub">Loading channels…</p>
+  </header>
+  <div class="bar">
+    <input id="q" type="search" placeholder="Search channels or what's on" aria-label="Search channels">
+    <select id="country" aria-label="Country"><option value="">All countries</option></select>
+    <button class="chip" id="liveOnly" aria-pressed="true">Live only</button>
+    <button class="chip" id="saver" aria-pressed="false">Data saver</button>
+  </div>
+  <main class="grid" id="grid"></main>
+</div>
+
+<dialog id="dlg">
+  <video id="vid" controls playsinline></video>
+  <div class="pbar"><h2 id="pname"></h2><select id="qual" aria-label="Video quality" hidden></select><button id="copy">Copy stream link</button><button id="close">Close</button></div>
+  <div class="note" id="pwhat" style="color:var(--dim)" hidden></div>
+  <div class="note" id="pnote" hidden></div>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
+<script>
+const PLAYLIST='https://iptv-org.github.io/iptv/categories/sports.m3u';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let DATA=[],hls=null,first=true,checked=true;
+
+async function load(){
+  try{const r=await fetch('data/channels.json');if(!r.ok)throw 0;const j=await r.json();if(!j.channels.length)throw 0;return j;}
+  catch{ // no health data yet: read the public playlist directly, status unknown
+    checked=false;const t=await(await fetch(PLAYLIST)).text(),out=[];let m=null;
+    for(const l of t.split(/\r?\n/)){
+      if(l.startsWith('#EXTINF')){const a=k=>(l.match(new RegExp(k+'="([^"]*)"'))||[])[1]||'';
+        m={name:l.slice(l.lastIndexOf(',')+1).trim(),logo:a('tvg-logo'),country:((a('tvg-id').match(/\.([a-z]{2})/i)||[])[1]||'').toUpperCase()};}
+      else if(l.trim()&&!l.startsWith('#')&&m){out.push({...m,id:'u'+out.length,url:l.trim(),live:null,https:l.startsWith('https:'),cors:true});m=null;}
+    }
+    return{updatedAt:null,channels:out};
+  }
+}
+const nowOf=c=>{const t=Date.now(),e=c.epg||[],i=e.findIndex(p=>p[0]<=t&&t<p[1]);return i<0?null:{cur:e[i],next:e[i+1]};};
+const pct=n=>Math.round((Date.now()-n.cur[0])/(n.cur[1]-n.cur[0])*100);
+const progInner=c=>{const n=nowOf(c);return n?`<span class="pt">${esc(n.cur[2])}</span><div class="tr"><i style="--p:${pct(n)}%"></i></div>`:'';};
+function tick(){document.querySelectorAll('.prog[data-id]').forEach(el=>{const c=DATA.find(x=>x.id===el.dataset.id),n=c&&nowOf(c);if(!n)return;
+  const t=el.querySelector('.pt');if(t&&t.textContent!==n.cur[2])t.textContent=n.cur[2];const i=el.querySelector('i');if(i)i.style.setProperty('--p',pct(n)+'%');});}
+setInterval(tick,30000);
+const ago=t=>{if(!t)return'';const m=Math.round((Date.now()-t)/6e4);return m<2?'just now':m<90?m+' min ago':Math.round(m/60)+' h ago';};
+
+function render(){
+  const q=$('#q').value.toLowerCase(),co=$('#country').value,lo=$('#liveOnly').getAttribute('aria-pressed')==='true'&&checked;
+  const rows=DATA.filter(c=>(!q||c.name.toLowerCase().includes(q)||(nowOf(c)?.cur[2]||'').toLowerCase().includes(q))&&(!co||c.country===co)&&(!lo||c.live));
+  const g=$('#grid');
+  g.className='grid'+(first?' enter':'');first=false;
+  g.innerHTML=rows.length?rows.map((c,i)=>{
+    const st=c.live===null?'':c.live?'live':'dead';
+    const label=c.live===null?'Unchecked':c.live?`Live, ${c.ms} ms`:'Offline';
+    return`<button class="card ${st}" style="--i:${Math.min(i,20)}" data-id="${c.id}">
+      <div class="thumb">${c.thumbAt?`<img class="shot" loading="lazy" src="thumbs/${c.id}.jpg" alt="">`:`<div class="noshot">${c.logo?`<img src="${esc(c.logo)}" alt="" loading="lazy">`:''}</div>`}
+        <span class="stat"><i class="dot"></i>${label}</span>
+        ${c.thumbAt&&c.logo?`<img class="logo" src="${esc(c.logo)}" alt="" loading="lazy" onerror="this.remove()">`:''}</div>
+      <div class="info"><div class="name">${esc(c.name)}</div>
+      <div class="prog" data-id="${c.id}">${progInner(c)}</div>
+      <div class="meta">${c.country||'International'}${c.thumbAt?`, frame from ${ago(c.thumbAt)}`:''}</div></div></button>`;
+  }).join(''):'<div class="empty">No channels match. Clear the search or switch off “Live only”.</div>';
+}
+
+function play(c){
+  const v=$('#vid'),note=$('#pnote');
+  $('#pname').textContent=c.name;note.hidden=true;
+  const n=nowOf(c),w=$('#pwhat');w.hidden=!n;
+  if(n)w.textContent=`On now: ${n.cur[2]}${n.next?`. Next: ${n.next[2]}`:''}`;
+  $('#dlg').showModal();
+  const fail=msg=>{note.textContent=msg;note.hidden=false;};
+  if(!c.https&&location.protocol==='https:')fail('This stream uses http, which browsers block on https pages. Copy the link and open it in VLC.');
+  else if(!c.cors)fail('This provider may block playback from other websites. If it stays black, copy the link into VLC.');
+  if(window.Hls&&Hls.isSupported()){
+    hls=new Hls();hls.on(Hls.Events.MANIFEST_PARSED,setupQuality);hls.on(Hls.Events.LEVEL_SWITCHED,labelAuto);hls.loadSource(c.url);hls.attachMedia(v);
+    hls.on(Hls.Events.ERROR,(e,d)=>{if(d.fatal)fail('This stream is not responding right now. Try another channel.');});
+  }else v.src=c.url;
+  v.play().catch(()=>{});
+  $('#copy').onclick=()=>{navigator.clipboard.writeText(c.url);$('#copy').textContent='Copied';setTimeout(()=>$('#copy').textContent='Copy stream link',1500);};
+}
+function stop(){$('#qual').hidden=true;if(hls){hls.destroy();hls=null;}const v=$('#vid');v.pause();v.removeAttribute('src');v.load();}
+
+const store={get:(k,d)=>{try{return localStorage.getItem('fl.'+k)??d;}catch{return d;}},set:(k,v)=>{try{localStorage.setItem('fl.'+k,v);}catch{}}};
+// Quality menu: only levels the broadcaster offers. Data saver starts at the lowest one.
+function setupQuality(){
+  const q=$('#qual'),all=hls.levels.map((l,i)=>({i,h:l.height||0})).filter(x=>x.h).sort((a,b)=>b.h-a.h);
+  const L=[...new Map(all.map(x=>[x.h,x])).values()];
+  q.hidden=L.length<2;if(q.hidden)return;
+  q.innerHTML='<option value="-1">Auto</option>'+L.map(x=>`<option value="${x.i}">${x.h}p</option>`).join('');
+  const want=+store.get('q',0);let pick=-1;
+  if(store.get('saver','0')==='1')pick=L[L.length-1].i;
+  else if(want){const m=L.find(x=>x.h<=want);if(m)pick=m.i;}
+  q.value=pick;hls.currentLevel=pick;labelAuto();
+}
+function labelAuto(){if(!hls)return;const h=hls.levels[hls.currentLevel]?.height;$('#qual').options[0].textContent=h?`Auto (${h}p)`:'Auto';}
+$('#qual').onchange=e=>{const i=+e.target.value;hls.currentLevel=i;store.set('q',i<0?0:hls.levels[i].height);};
+$('#saver').setAttribute('aria-pressed',store.get('saver','0')==='1');
+$('#saver').onclick=e=>{const b=e.currentTarget,on=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',on);store.set('saver',on?1:0);};
+$('#grid').addEventListener('click',e=>{const b=e.target.closest('.card');if(b)play(DATA.find(c=>c.id===b.dataset.id));});
+$('#close').onclick=()=>$('#dlg').close();
+$('#dlg').addEventListener('close',stop);
+$('#dlg').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.close();});
+$('#q').oninput=render;$('#country').onchange=render;
+$('#liveOnly').onclick=e=>{const b=e.currentTarget;b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')!=='true');render();};
+
+load().then(j=>{
+  DATA=j.channels;
+  const cs=[...new Set(DATA.map(c=>c.country).filter(Boolean))].sort();
+  $('#country').innerHTML+=cs.map(c=>`<option>${c}</option>`).join('');
+  const n=DATA.filter(c=>c.live).length;
+  $('#sub').innerHTML=checked?`<b>${n} channels live</b> out of ${DATA.length} checked. Updated ${ago(j.updatedAt)}. Frames show what each channel was airing at the last check.`
+    :`${DATA.length} channels loaded. Run the health check workflow to see which are live.`;
+  if(!checked)$('#liveOnly').hidden=true;
+  render();
+}).catch(()=>{$('#sub').textContent='Could not load channels. Check your connection and refresh.';});
+</script>
+</body>
+</html>
