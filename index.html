@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Floodlight: live sports channels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body class="bg-paper font-sans text-bark-900 antialiased">
+<header class="bg-gradient-to-br from-wine-900 via-wine-700 to-bark-700 text-white">
+  <div class="mx-auto max-w-7xl px-4 pb-7 pt-8 md:px-8 md:pb-10 md:pt-14">
+    <h1 class="sweep font-display text-6xl font-extrabold leading-none md:text-9xl">Floodlight</h1>
+    <p id="sub" class="mt-3 max-w-xl text-white/80">Loading channels…</p>
+    <nav class="mt-5 flex gap-2">
+      <a href="#channels" class="grid min-h-11 place-items-center rounded-full bg-white/15 px-5 hover:bg-white/25">Channels</a>
+      <a href="#guide" class="grid min-h-11 place-items-center rounded-full bg-white/15 px-5 hover:bg-white/25">Program guide</a>
+    </nav>
+  </div>
+</header>
+<main class="mx-auto max-w-7xl px-4 pb-32 md:px-8">
+  <section id="channels" class="scroll-mt-0">
+    <div class="sticky top-0 z-30 -mx-4 flex flex-wrap gap-2 bg-paper/90 px-4 py-3 backdrop-blur md:mx-0 md:px-0 md:py-4">
+      <input id="q" type="search" placeholder="Search channels or what’s on" aria-label="Search" class="ctl min-w-0 flex-[1_1_100%] md:flex-[1_1_260px]">
+      <select id="country" aria-label="Country" class="ctl min-w-0 flex-[1_1_130px] md:flex-none"><option value="">All countries</option></select>
+      <button id="liveOnly" aria-pressed="true" class="ctl chip">Live only</button>
+      <button id="saver" aria-pressed="false" class="ctl chip">Data saver</button>
+    </div>
+    <div id="grid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5 xl:grid-cols-4"></div>
+  </section>
+  <section id="guide" class="mt-14 scroll-mt-4">
+    <h2 class="font-display text-4xl font-extrabold text-wine-700">Program guide</h2>
+    <div id="guideBox" class="mt-4 overflow-x-auto rounded-2xl border border-bark-100 bg-white"></div>
+  </section>
+</main>
+
+<div id="player" hidden class="fixed inset-x-0 bottom-0 z-50 overflow-hidden rounded-t-2xl bg-bark-900 pb-[env(safe-area-inset-bottom)] text-white shadow-2xl md:inset-x-auto md:bottom-6 md:right-6 md:w-[420px] md:rounded-2xl md:pb-0">
+  <div class="vwrap relative aspect-video bg-black">
+    <video id="vid" class="size-full" controls playsinline></video>
+    <div id="perr" hidden class="absolute inset-0 grid place-items-center bg-bark-900/90 p-5 text-center text-sm"></div>
+  </div>
+  <div class="p-3">
+    <div class="flex items-center gap-2">
+      <h3 id="pname" class="min-w-0 flex-1 truncate font-display text-2xl font-semibold"></h3>
+      <select id="qual" hidden aria-label="Video quality" class="min-h-11 rounded-lg bg-white/10 px-2 text-sm text-white [&>option]:text-bark-900"></select>
+      <button id="expand" aria-label="Full screen" class="grid size-11 place-items-center rounded-lg bg-white/10 hover:bg-royal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      <button id="close" aria-label="Close player" class="grid size-11 place-items-center rounded-lg bg-white/10 hover:bg-wine-600">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+    </div>
+    <div id="pinfo" class="mt-1 space-y-1 text-sm text-white/80"></div>
+  </div>
+</div>
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>
