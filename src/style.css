@@ -1,15 +1,17 @@
 @import "tailwindcss";
 @theme static {
   --color-wine-900:#4a1024; --color-wine-700:#7a1f3d; --color-wine-600:#923050;
-  --color-bark-900:#2b1a12; --color-bark-700:#6a4430; --color-bark-100:#eadfd7;
-  --color-royal:#1f5fd6; --color-paper:#fbf8f5;
+  --color-bark-900:#2b1a12; --color-bark-700:#6a4430; --color-bark-100:#4a3023;
+  --color-royal:#1f5fd6; --color-paper:#1d110b; --color-sand-100:#ecd9c6; --color-sand-200:#d9c2ab; --color-sand-300:#bfa48d; --color-wine-300:#e08aa6;
   --font-display:"Barlow Condensed",sans-serif; --font-sans:Barlow,system-ui,sans-serif;
 }
-.ctl{min-height:2.75rem;border-radius:.75rem;border:1px solid var(--color-bark-100);background:#fff;padding:0 1rem;font:inherit}
+.ctl{min-height:2.75rem;border-radius:.75rem;border:1px solid var(--color-bark-100);background:var(--color-bark-900);color:var(--color-sand-100);padding:0 1rem;font:inherit}
 .chip{cursor:pointer}
-.chip[aria-pressed=true]{background:var(--color-royal);border-color:var(--color-royal);color:#fff}
+.chip[aria-pressed=true]{background:var(--color-royal);border-color:var(--color-royal);color:var(--color-sand-100)}
+:root{color-scheme:dark}
+option{background:#2b1a12;color:#ecd9c6}
 :focus-visible{outline:2px solid var(--color-royal);outline-offset:2px}
-.sweep{background:linear-gradient(100deg,transparent,#8fb4ff,transparent) -60% 0/40% 100% no-repeat,linear-gradient(#fff,#fff);-webkit-background-clip:text;background-clip:text;color:transparent;animation:sweep 2.2s .2s ease-out forwards}
+.sweep{background:linear-gradient(100deg,transparent,#8fb4ff,transparent) -60% 0/40% 100% no-repeat,linear-gradient(#ecd9c6,#ecd9c6);-webkit-background-clip:text;background-clip:text;color:transparent;animation:sweep 2.2s .2s ease-out forwards}
 @keyframes sweep{to{background-position:160% 0,0 0}}
 .enter .card{animation:in .5s calc(var(--i)*30ms) both cubic-bezier(.2,.8,.2,1)}
 @keyframes in{from{opacity:0;transform:translateY(24px) scale(.97)}}
@@ -17,4 +19,4 @@
 @keyframes rise{from{opacity:0;transform:translateY(30px)}}
 #player[data-full]{inset:0;width:auto;height:100dvh;border-radius:0;display:flex;flex-direction:column}
 #player[data-full] .vwrap{flex:1;aspect-ratio:auto}
-@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.sweep{background:none;color:#fff}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.sweep{background:none;color:#ecd9c6}}
