@@ -5,7 +5,7 @@ type Prog = [number, number, string]; // start ms, stop ms, title
 interface Quality { h: number[]; kbps: number; codec: string }
 interface Channel {
   id: string; name: string; logo: string; country: string; url: string;
-  live: boolean | null; ms: number | null; https: boolean; cors: boolean;
+  live: boolean | null; playable?: boolean; ms: number | null; https: boolean; cors: boolean;
   thumbAt: number | null; epg?: Prog[]; q?: Quality | null;
 }
 
@@ -22,6 +22,7 @@ const store = {
 
 let data: Channel[] = [], checked = true, first = true, hls: Hls | null = null, cur: Channel | null = null;
 
+const usable = (c: Channel) => c.live !== false && c.playable !== false;
 const tier = (h: number) => (h >= 2160 ? '4K' : h >= 1080 ? 'FHD' : h >= 720 ? 'HD' : 'SD');
 const qLabel = (c: Channel) => (c.q?.h.length ? `${tier(c.q.h[0])} ${c.q.h[0]}p` : 'Quality unknown');
 const nowOf = (c: Channel) => {
@@ -37,7 +38,7 @@ const facts = (c: Channel) => [
   c.ms ? `${c.ms} ms` : '',
 ].filter(Boolean);
 
-async function load(): Promise<{ updatedAt: number | null; channels: Channel[] }> {
+async function load(): Promise<{ updatedAt: number | null; checked?: number; channels: Channel[] }> {
   try {
     const r = await fetch(BASE + 'data/channels.json');
     if (!r.ok) throw 0;
@@ -80,14 +81,14 @@ function card(c: Channel, i: number) {
 function render() {
   const q = $<HTMLInputElement>('#q').value.toLowerCase(), co = $<HTMLSelectElement>('#country').value;
   const lo = $('#liveOnly').getAttribute('aria-pressed') === 'true' && checked;
-  const rows = data.filter((c) => (!q || c.name.toLowerCase().includes(q) || (nowOf(c)?.cur[2] || '').toLowerCase().includes(q)) && (!co || c.country === co) && (!lo || c.live));
+  const rows = data.filter((c) => (!q || c.name.toLowerCase().includes(q) || (nowOf(c)?.cur[2] || '').toLowerCase().includes(q)) && (!co || c.country === co) && (!lo || usable(c)));
   const g = $('#grid');
   g.classList.toggle('enter', first); first = false;
   g.innerHTML = rows.length ? rows.map(card).join('') : '<p class="col-span-full py-16 text-center text-sand-300">No channels match. Clear the search or switch off “Live only”.</p>';
 }
 
 function guide() {
-  const box = $('#guideBox'), rows = data.filter((c) => c.epg?.length).slice(0, 40);
+  const box = $('#guideBox'), rows = data.filter((c) => c.epg?.length && usable(c)).slice(0, 40);
   if (!rows.length) { box.innerHTML = '<p class="p-8 text-center text-sand-300">No guide data yet. Add the EPG_SITES repository variable and run the workflow.</p>'; return; }
   const PPM = 4, ws = Math.floor((Date.now() - 30 * 6e4) / 18e5) * 18e5, W = 360 * PPM, nowX = ((Date.now() - ws) / 6e4) * PPM;
   const ticks = Array.from({ length: 12 }, (_, i) => `<span class="absolute top-2 border-l border-bark-100 pl-1 text-xs text-sand-300" style="left:${i * 120}px">${hm(ws + i * 18e5)}</span>`).join('');
@@ -162,8 +163,8 @@ setInterval(() => { // keep progress bars and the guide's "now" line current
 load().then((j) => {
   data = j.channels;
   $('#country').innerHTML += [...new Set(data.map((c) => c.country).filter(Boolean))].sort().map((c) => `<option>${c}</option>`).join('');
-  const n = data.filter((c) => c.live).length;
-  $('#sub').textContent = checked ? `${n} channels live out of ${data.length} checked. Updated ${ago(j.updatedAt)}. Frames show what each channel was airing at the last check.` : `${data.length} channels loaded. Run the workflow to see which are live.`;
+  const n = data.filter((c) => c.live && c.playable !== false).length;
+  $('#sub').textContent = checked ? `${n} channels live out of ${j.checked ?? data.length} checked. Updated ${ago(j.updatedAt)}. Frames show what each channel was airing at the last check.` : `${data.length} channels loaded. Run the workflow to see which are live.`;
   if (!checked) $('#liveOnly').hidden = true;
   render(); guide();
 }).catch(() => { $('#sub').textContent = 'Could not load channels. Check your connection and refresh.'; });
